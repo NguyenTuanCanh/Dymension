@@ -1,0 +1,66 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+
+xxxigm_9527691-1
+
+
+
+{
+  "chainId": "xxxigm_9527691-1",
+  "chainName": "xxxigm_9527691-1",
+  "rpc": "http://157.90.230.95:26657",
+  "rest": "http://157.90.230.95:1317",
+  "bech32Prefix": "ethm",
+  "currencies": [
+    {
+      "displayDenom": "DAS",
+      "baseDenom": "uDAS",
+      "decimals": 18,
+      "logo": "/logos/xxxigm_9527691-1.png",
+      "type": "main"
+    }
+  ],
+  "coinType": 60,
+  "faucetUrl": "https://discord.com/channels/956961633165529098/1125047988247593010",
+  "website": "",
+  "logo": "/logos/xxxigm_9527691-1.png",
+  "ibc": {
+    "hubChannel": "channel-5997",
+    "channel": "channel-0",
+    "timeout": 172800000
+  },
+  "evm": {
+    "chainId": "0x91618b",
+    "rpc": "http://157.90.230.95:8545"
+  },
+  "type": "RollApp",
+  "da": "Celestia",
+  "description": "",
+  "analytics": true
+}
+
+
+rollapp_evm tx ibc-transfer transfer transfer channel-0 0x85d1465f71abFB2EA203849E7c91c99ca9B4f295 5uDAS --from rollapp_sequencer --keyring-backend test --home ~/.roller/rollapp --broadcast-mode block
