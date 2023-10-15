@@ -28,15 +28,15 @@ body {
   max-width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Hanalei Fill', cursive;
-  background-image: url("./public/bg9.jpg");
+  font-family: 'Ezra', cursive;
+  background-image: url("https://10kswap.com/assets/bg.e123dbf8.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 input {
-  font-family: 'Hanalei Fill', cursive;
+  font-family: 'Ezra', cursive;
 }
 
 ::placeholder {

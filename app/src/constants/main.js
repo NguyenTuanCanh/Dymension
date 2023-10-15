@@ -1,6 +1,10 @@
 export const HOST = "http://157.90.230.95:50000"
 
-export const CONTRACT_ADDRESS = "0xdda2550ac882E01b9c15751251984103559f5AB8"
+export const CONTRACT_ADDRESS = "0x9aCBA3eEA0efEE782C66784E59203d797F8292dd"
+
+export const DYMENSION_1 = "ipfs://bafybeihb5rh246bwfffnjqjsnrnninnrd6f5743wmtcvz447n2a42y6ey4/dymension-1.png"
+export const DYMENSION_2 = "ipfs://bafybeihb5rh246bwfffnjqjsnrnninnrd6f5743wmtcvz447n2a42y6ey4/dymension-2.png"
+export const DYMENSION_3 = "ipfs://bafybeihb5rh246bwfffnjqjsnrnninnrd6f5743wmtcvz447n2a42y6ey4/dymension-3.png"
 
 export const MENU = {
     HOME: 1,

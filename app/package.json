@@ -19,7 +19,7 @@
     "@rainbow-me/rainbowkit": "^0.8.0",
     "babel-plugin-macros": "^3.1.0",
     "ethers": "5.6.9",
-    "ipfs-http-client": "^60.0.0",
+    "ipfs-http-client": "^60.0.1",
     "moralis": "^2.23.1",
     "react": "^18.2.0",
     "react-contenteditable": "^3.3.7",

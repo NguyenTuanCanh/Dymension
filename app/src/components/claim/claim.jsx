@@ -16,9 +16,13 @@ import {
   STATUS_NAME,
   MAX_LENGTH_NAME,
   NAV_BAR_IDS,
+  DYMENSION_1,
+  DYMENSION_2,
+  DYMENSION_3
 } from "../../constants/main.js";
 
 function Claim(props) {
+  const img = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='purple' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>"
   const [nftContract, setNftContract] = useState(null);
 
   const [mintedNFT, setMintedNFT] = useState(null);
@@ -27,6 +31,8 @@ function Claim(props) {
   const [statusName, setStatusName] = useState("");
   const [disabledBtn, setDisabledBtn] = useState(true);
   const [walletAddress, setWalletAddress] = useState(null);
+  const [priceNft, sePriceNft] = useState("0.0000");
+  const [imageNft, seImageNft] = useState(DYMENSION_1);
 
   const [dymensionAdress, setDymensionAdress] = useState("");
   const [disabledFaucetBtn, setDisabledFaucetBtn] = useState(true);
@@ -43,7 +49,9 @@ function Claim(props) {
       setMintedNFT(false);
       if (window?.ethereum) {
         let nftTx = await nftContract.createDymensionNameNFT(
-          dymensionName + ".dym"
+          dymensionName + ".dym", 
+          imageNft,
+          { value: ethers.utils.parseEther(`${priceNft}`)}
         );
         toast("Your name is minting !", {
           icon: "👏",
@@ -66,7 +74,11 @@ function Claim(props) {
         console.log("Ethereum object doesn't exist!");
       }
     } catch (error) {
-      toast.error("Something went wrong!");
+      if(error.data?.code === -32000) {
+        toast.error("Insufficient balance for transfer!");
+      } else {
+        toast.error("Something went wrong!");
+      }
       console.log("Error minting character", error);
     } finally {
       setMintedNFT(true);
@@ -74,14 +86,33 @@ function Claim(props) {
   };
 
   const handleFaucet = async () => {
-    try {
-      const params = { address:  dymensionAdress};
-      await axios.post(`${HOST}/faucet`, params);
+    const provider = new ethers.providers.JsonRpcProvider("https://froopyland.dymension.xyz/8/xxxigm_9527691-1/evmrpc");
+    const privateKey = "e9d6034e5c8dadeddc0a2c90dc9e04aee5af1bbd389f2b51e98d7a2485d82e0a";
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const recipientAddress = dymensionAdress;
+    const amountToSend = ethers.utils.parseEther("1");
+    const transaction = {
+      to: recipientAddress,
+      value: amountToSend,
+    };
 
-      toast.success("Can wait up to 24 hours!");
-    } catch (error) {
-      console.log(error);
-    }
+    toast('Please wait a few seconds!', {
+      icon: '👏',
+      duration: 8000,
+    });
+
+    setDisabledFaucetBtn(true)
+
+    wallet.sendTransaction(transaction)
+    .then(() => {
+      toast.success("Faucet is successful!");
+    })
+    .catch(() => {
+      toast.error("Something went wrong!");
+    })
+    .finally(() => {
+      setDymensionAdress('')
+    });
   }
 
   const setNftToStore = async (name, id) => {
@@ -107,11 +138,13 @@ function Claim(props) {
       const { data } = await axios.post(`${HOST}/check-nft-exist`, {
         name: dymensionName + ".dym",
       });
-      const statusName = data.isExist
+      const statusName = 
+        dymensionName === '' ? '' 
+        : data.isExist
         ? STATUS_NAME.Unavailable
         : STATUS_NAME.Available;
       setStatusName(statusName);
-      setDisabledBtn(data.isExist);
+      setDisabledBtn(data.isExist || !dymensionName);
     } catch (error) {
       console.log(error);
     }
@@ -152,10 +185,12 @@ function Claim(props) {
     }, 10);
 
   const onChangeDymensionName = (e) => {
-    let nameCel = e.replace(/[^\w\s]/gi, "");
-    if (nameCel.length > MAX_LENGTH_NAME) return;
-    setDymensionName(nameCel);
-    handleSetWidthDymensionNameInput();
+    setTimeout(() => {
+      let nameCel = e.replace(/[^\w\s]/g, "").replace(/\s/g, "");
+      if (nameCel.length > MAX_LENGTH_NAME) return;
+      setDymensionName(nameCel);
+      handleSetWidthDymensionNameInput();
+    }, 10);
   };
 
   const onChangeDymensionAdress = (e) => {
@@ -179,6 +214,21 @@ function Claim(props) {
     setNftContract(nftContract);
   };
 
+  const getInfoNft = () => {
+    if (dymensionName.length === 0) return sePriceNft('0.0000')
+
+    if(dymensionName.length === 1) {
+      sePriceNft(0.9)
+      seImageNft(DYMENSION_3)
+    } else if(dymensionName.length >1 && dymensionName.length < 4) {
+      sePriceNft(0.6)
+      seImageNft(DYMENSION_2)
+    } else {
+      sePriceNft(0.3)
+      seImageNft(DYMENSION_1)
+    }
+  }
+
   useEffect(() => {
     if (typeof document !== "undefined") {
       onMountContract();
@@ -186,16 +236,16 @@ function Claim(props) {
   }, []);
 
   useEffect(() => {
-    if (dymensionName) {
-      onCheckExistDymensionName();
-    } else {
-      setStatusName("");
-      setDisabledBtn(true);
+    const handle = async() => {
+      await onCheckExistDymensionName();
+      getInfoNft()
     }
+
+    handle()
   }, [dymensionName]);
 
   useEffect(() => {
-    setDisabledBtn(!mintedNFT);
+    setDisabledBtn(mintedNFT);
   }, [mintedNFT]);
 
   useEffect(() => {
@@ -215,23 +265,51 @@ function Claim(props) {
         }
 
       } catch (error) {
-        console.error("Failed to check custom chain", error);
+        addNetwork()
       }
     } else {
       console.error("MetaMask extension not detected");
     }
   }
 
+  const addNetwork = function() {
+    const networkInfo = {
+      chainId: "0x91618b",
+      chainName: 'Dymension',
+      nativeCurrency: {
+          name: 'Dymension',
+          symbol: 'DAS',
+          decimals: 18,
+      },
+      rpcUrls: ['https://froopyland.dymension.xyz/8/xxxigm_9527691-1/evmrpc'],
+    };
+  
+    ethereum
+        .request({
+            method: 'wallet_addEthereumChain',
+            params: [networkInfo],
+        })
+        .then(() => {
+            ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x91618b" }]
+            });
+        })
+        .catch((error) => {
+            console.error('Error adding network to MetaMask:', error);
+        });
+  }
+
   useEffect(() => {
     checknetworks()
-  });
+  }, []);
 
   return (
     <div style={main}>
       { props.navBarId === NAV_BAR_IDS.HONE &&
         <div style={mainWrap}>
-          <h2>Your Name Dymension</h2>
-          <div>Claim your free dymension name to experience the fun.</div>
+          <h2 style={tittle}>Register a .dym Name</h2>
+          <div>Claim your <strong>.dym</strong> domain name. Mint your rare gems 💎</div>
           <div style={mainWrapInput} onClick={onFocusInput}>
             <input
               id="dymensionNameInput"
@@ -252,6 +330,14 @@ function Claim(props) {
               {statusName}
             </span>
           </div>
+          <div style={mainWrapPrice}>
+            <div>
+              {priceNft}
+            </div>
+            <div style={spanSymbol}>
+              DAS
+            </div>
+          </div>
           <div
             className={`${disabledBtn ? "disabled" : ""}`}
             style={mainWrapButton}
@@ -266,7 +352,7 @@ function Claim(props) {
           <input
             id="dymensionAdressInput"
             style={dymensionAdressInput}
-            placeholder="Enter adress ..."
+            placeholder="Enter your evm address ..."
             value={dymensionAdress}
             onChange={(e) => onChangeDymensionAdress(e.target.value)}
         />
@@ -291,7 +377,7 @@ const main = {
 };
 
 const mainWrap = {
-  width: "650px",
+  width: "600px",
   height: "auto",
   fontSize: "20px",
   widkgroundSize: "cover",
@@ -304,6 +390,11 @@ const mainWrap = {
   alignItems: "center",
   flexDirection: "column",
   boxShadow: "rgba(149, 157, 165, 0.2) 0px 8px 24px",
+  marginBottom: "150px",
+};
+
+const tittle = {
+  marginBottom: "15px",
 };
 
 const mainWrapInput = {
@@ -312,10 +403,9 @@ const mainWrapInput = {
   alignItems: "center",
   padding: "8px 16px 8px 16px",
   gap: "16px",
-  width: "539px",
+  width: "479px",
   height: "42px",
   background: "#FFFFFF",
-  boxShadow: "0px 2px 10px 2px rgba(0, 0, 0, 0.1)",
   borderRadius: "10px",
   fontSize: "16px",
   outline: "none",
@@ -323,6 +413,20 @@ const mainWrapInput = {
   marginTop: "50px",
   border: "1px solid #DADCE0",
 };
+
+const mainWrapPrice = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "8px 16px 8px 16px",
+  width: "479px",
+  height: "42px",
+  borderRadius: "10px",
+  fontSize: "16px",
+  color: "#A9A9A9",
+  marginTop: "12px",
+  border: "1px solid #DADCE0",
+}
 
 const dymensionNameInput = {
   borderRadius: "10px",
@@ -338,6 +442,10 @@ const spanName = {
   zIndex: -1,
 };
 
+const spanSymbol = {
+  color: "black",
+}
+
 const namePrefix = {
   marginLeft: "-18px",
   color: "#555",
@@ -345,7 +453,7 @@ const namePrefix = {
 
 const mainWrapButton = {
   height: "56px",
-  width: "572px",
+  width: "514px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -357,32 +465,8 @@ const mainWrapButton = {
   marginBottom: "50px",
 };
 
-const nftInfor = {
-  position: "relative",
-  borderRadius: "6px",
-  padding: "34px",
-  textAlign: "start",
-  marginBottom: "50px",
-  boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
-};
-
-const hideInfo = {
-  position: "absolute",
-  right: "-10px",
-  top: "-10px",
-  height: "26px",
-  width: "26px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "14px",
-  cursor: "pointer",
-  boxShadow:
-    "rgb(204, 219, 232) 3px 3px 6px 0px inset, rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset",
-};
-
 const dymensionAdressInput = {
-  width: "600px",
+  width: "550px",
   height: "50px",
   padding: "0 12px",
   boder: 'none',
@@ -391,7 +475,7 @@ const dymensionAdressInput = {
 
 const btnFaucet = {
   height: "56px",
-  width: "628px",
+  width: "576px",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -399,7 +483,9 @@ const btnFaucet = {
   color: "white",
   marginTop: "10px",
   cursor: "pointer",
-  marginBottom: "50px",
+  marginBottom: "150px",
 }
 
 export default Claim;
+
+

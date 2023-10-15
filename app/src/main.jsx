@@ -32,7 +32,7 @@ const ethermint = {
   },
   rpcUrls: {
     default: {
-      http: ['http://157.90.230.95:8545/'],
+      http: ['https://froopyland.dymension.xyz/8/xxxigm_9527691-1/evmrpc'],
     },
   },
   testnet: true,
